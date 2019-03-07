@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { View, Text as BaseText } from 'react-native'
 import { LineChart } from 'react-native-svg-charts'
-import { Circle, G, Line, Rect, Text } from 'react-native-svg'
+import { Polygon, Circle, G, Line, Rect, Text } from 'react-native-svg'
 
 const StyledGraph = styled(View).attrs({
 })`
@@ -30,27 +30,48 @@ export default class SvgChart extends React.PureComponent {
 
   renderText = (x, y, data) => {
     const { pointIndex } = this.state
-    const title = pointIndex === data.length - 1 ? 'Now' : data[pointIndex].rawTime
+
+    let isNow
+    if (pointIndex === data.length - 1) {
+      isNow = true
+    } else if (pointIndex === 0) {
+      isNow = false
+    }
+
+    const title = isNow ? 'Now' : data[pointIndex].rawTime
+    const posX = isNow
+      ? x(pointIndex) - 25                          // last point
+      : (isNow === undefined ? x(pointIndex) - 10   // normal point
+        : x(pointIndex) + 30)                       // first point
+    const posArrow = isNow ? '10 -10 25 -10 26 6' : (
+      isNow === undefined ? '0 -10 15 -10 10 5' : '-35 -10 -20 -10 -27 7')
+
     return <G
-      x={x(pointIndex)}
-      y={y(data[pointIndex].price) - 10}>
+      fontSize="10"
+      fontFamily="Roboto"
+      fill="#333"
+      x={posX}
+      y={y(data[pointIndex].price) - 12}>
       <Rect
-        x={-35}
+        x={-38}
         y={-33}
-        width="65" height="30" fillOpacity={.5} />
+        fill="#333"
+        width={70}
+        height="30"
+        fillOpacity={1} />
+      <Polygon
+        points={posArrow} />
       <Text
-        fontSize="10"
         // fontWeight="bold"
         dy={-25}
-        dx={-5}
+        dx={-2}
         fill={'white'}
         alignmentBaseline={'middle'}
         textAnchor={'middle'}>{title}</Text>
       <Text
-        fontSize="10"
-        // fontWeight="bold"
+        fontSize="11"
         dy={-10}
-        dx={-5}
+        dx={-2}
         fill={'white'}
         alignmentBaseline={'middle'}
         textAnchor={'middle'}>{'$' + data[pointIndex].price}</Text>
